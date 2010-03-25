@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--  This panel displays a temporary playlist with associated controls -->
+
+<mx:Panel xmlns:mx="http://www.adobe.com/2006/mxml" initialize="initializeHandler(event)">
+	<mx:Script> 
+    <![CDATA[
+    	import models.DataModel;
+    	import controls.Controller;
+    	import mx.binding.utils.ChangeWatcher;
+		/**
+		* Initializes a ChangeWatcher which redraws the temp playlist on track change.
+		* @param event event generated on panel initialization.
+        */
+         private function initializeHandler(event:Event):void {
+        	ChangeWatcher.watch(DataModel.get_instance().status,"current_track", function(event:Event):void { playlist_data.invalidateList();});
+        	playlist_data.addEventListener(KeyboardEvent.KEY_UP, temp_list_keypress);
+        }
+		/**
+		* Function triggered when TempPlaylist is focused and a key is pressed.
+		* @param event Keyboard Event triggered by keypress.
+        */
+        private function temp_list_keypress(event:KeyboardEvent):void
+		{
+			if((event.charCode == 8 || event.charCode == 127) && playlist_data.selectedIndex != -1){
+				DataModel.get_instance().temp_playlist.removeItemAt(playlist_data.selectedIndex);
+			}
+		}
+   	]]> 
+	</mx:Script>
+
+	<mx:List id="playlist_data" width="100%" height="100%" 
+			dragMoveEnabled="true" dragEnabled="true" dragExit="true" dropEnabled="true"
+			itemDoubleClick="Controller.get_instance().play_song(DataModel.get_instance().temp_playlist[event.rowIndex])"
+			doubleClickEnabled="true" itemRenderer="views.PlaylistRenderer"  showDataTips="true"/>
+	<mx:ControlBar>
+		<mx:Button id='clear_playlist_button' toolTip="clear playlist"  
+			width="25" height="25" icon="@Embed(source='../assets/script_delete.png')"
+			click="Controller.get_instance().clear_playlist()" />
+		<mx:Spacer width="100%"/>
+		<mx:CheckBox id='random_checkbox' label="Random" />
+		<mx:CheckBox id='repeat_checkbox' label="Repeat" />
+	</mx:ControlBar>
+	
+	<!-- Data Bindings -->
+	<mx:Binding source="DataModel.get_instance().temp_playlist" destination="playlist_data.dataProvider" />
+	<mx:Binding source="random_checkbox.selected" destination="DataModel.get_instance().temp_playlist.random" />
+	<mx:Binding source="repeat_checkbox.selected" destination="DataModel.get_instance().temp_playlist.repeat" />
+	
+	
+</mx:Panel>

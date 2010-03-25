@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--  This panel displays current playing track and player position, and also provides a slider to allow change in position. -->
+
+<mx:Panel xmlns:mx="http://www.adobe.com/2006/mxml" width="421" height="73" 
+	verticalScrollPolicy="off" horizontalScrollPolicy="off" layout="vertical" textAlign="center" 
+	headerHeight="8" horizontalAlign="center" verticalGap="0">
+	<!-- Formatting functions-->
+	<mx:Script> 
+        <![CDATA[
+        	import models.DataModel;
+        	import controls.Controller;
+        	
+        	/**
+        	 * Function for formatting a number as a time.
+        	 * @param duration Number to be formatted
+        	 * @return String formatted as a time.
+        	 */
+			private function time_format(duration:Number):String{
+				if (duration == 0)
+					return "0:00";
+				var minutes:String = String(int(duration/60))
+				var seconds:String = String(int(duration%60));
+				if (seconds.length == 1)
+					seconds = "0" + seconds; 
+				return  minutes+ ":" + seconds;
+			}
+			
+			/**
+        	 * Function for formatting a track's artist and title.
+        	 * @param artist
+        	 * @param title
+        	 * @return Artist and title to be displayed.
+        	 */
+			private function format_track_info(artist:String, title:String):String{
+				if(artist != ""){
+					return artist + ' - ' + title;
+				}else
+					return " ";
+			}
+       	]]> 
+	</mx:Script>
+
+	<mx:VBox width="100%" height="100%" horizontalAlign="center" verticalGap="0">
+	
+	<mx:Text id="song_info" text="..loading...." fontSize="12" paddingTop="5"/>
+	<mx:HBox width="100%" horizontalScrollPolicy="off" verticalScrollPolicy="off" horizontalAlign="center" height="100%">
+		<mx:Label text="0:00" id="current_time" paddingLeft="5" paddingTop="4"/>
+		<mx:HSlider id="song_position" width="100%" snapInterval="1" dataTipPrecision="0"
+				change="Controller.get_instance().set_position(int(event.value));" />
+		<mx:Label text="0:00" id="track_time" paddingRight="5" paddingTop="4"/>
+	</mx:HBox>
+	</mx:VBox>
+	
+	<!-- Data Bindings -->
+	<mx:Binding source="format_track_info(DataModel.get_instance().status.current_track.artist,DataModel.get_instance().status.current_track.title)" destination="song_info.text" />
+	<mx:Binding source="DataModel.get_instance().status.position" destination="song_position.value" />
+	<mx:Binding source="DataModel.get_instance().status.current_track.duration" destination="song_position.maximum" />
+	<mx:Binding source="time_format(DataModel.get_instance().status.position)" destination="current_time.text" />
+	<mx:Binding source="DataModel.get_instance().status.current_track.formatted_time" destination="track_time.text" />
+</mx:Panel>

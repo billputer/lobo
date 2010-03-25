@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- mx:Panel containing controls and playlist functionality -->
+
+<mx:Panel xmlns:mx="http://www.adobe.com/2006/mxml">
+	
+	<mx:Script> 
+    <![CDATA[
+    	import controls.Controller;
+    	import models.DataModel;
+    	import mx.events.*;
+    	import mx.controls.Menu;
+   	]]> 
+	</mx:Script>
+	
+	<mx:HBox width="100%">
+		<!-- Playlist name and selection button -->
+		<mx:Label text="Current playlist:" fontWeight="bold" color="#0B333C"/>
+		<mx:Spacer width="100%"/>
+		<mx:PopUpMenuButton id="playlist_select_button" label="..loading playlists..." 
+			itemClick="Controller.get_instance().set_playlist(event.index)"  width="100%"/>
+	</mx:HBox>
+	<!-- Current Playlist Data Grid-->
+	<mx:DataGrid id="current_playlist_grid" width="100%" height="100%" 
+		dragEnabled="true" dragMoveEnabled="false" dropEnabled="false"  allowMultipleSelection="true" editable="false"
+		itemDoubleClick="DataModel.get_instance().temp_playlist.addItem(current_playlist_grid.selectedItem)"
+		doubleClickEnabled="true" >
+		<mx:columns> 
+    		<mx:DataGridColumn headerText="Title" dataField="title" width="220"  /> 
+    		<mx:DataGridColumn headerText="Artist" dataField="artist"  width="180"  /> 
+    		<mx:DataGridColumn headerText="Album" dataField="album" width="200"  />
+    		<mx:DataGridColumn headerText="Track #" dataField="track_number" width="50" textAlign="right" />
+    		<mx:DataGridColumn headerText="Time" dataField="formatted_time" width="35" textAlign="right" />
+    		<mx:DataGridColumn headerText="Year" dataField="year" width="35" textAlign="right" />
+		</mx:columns>
+	</mx:DataGrid> 
+	
+	<!-- Player Controls -->
+	<mx:ControlBar>
+		<mx:Button click="Controller.get_instance().previous()" toolTip="play previous song"  
+			width="25" height="25" icon="@Embed(source='../assets/control_start.png')"/>
+		<mx:Button click="Controller.get_instance().stop()" toolTip="stop playing" icon="@Embed(source='../assets/control_stop.png')" width="25" height="25"/>
+		<mx:Button id="play_pause_button" toolTip="play/pause music"
+			icon="{control_play}" click="Controller.get_instance().play_pause()"
+			width="25" height="25" >
+			<mx:Script> 
+	    		<![CDATA[
+	    			[Embed(source="../assets/control_pause.png")] 
+	            	private var control_pause:Class;
+	            	[Bindable]
+	            	[Embed(source="../assets/control_play.png")] 
+	            	private var control_play:Class;
+	            	
+	            	private function set playIcon(state:String):void{
+						if(state == "playing")
+							play_pause_button.setStyle("icon", control_pause);
+						else
+							play_pause_button.setStyle("icon", control_play);
+	    			}
+	    		]]> 
+  			</mx:Script> 
+		</mx:Button>
+		<mx:Button click="Controller.get_instance().next()" toolTip="play next song" icon="@Embed(source='../assets/control_end.png')" height="25" width="25"/>
+		<mx:Spacer width="100%"/>
+		
+		<!-- Volume slider -->
+		<mx:ApplicationControlBar height="30">
+			<mx:Image source="{volume_icon}"/>
+			<mx:HSlider id="volume_slider" minimum="0" maximum="100" dataTipPrecision="0"
+			       snapInterval="1" change="updateVolume(event)" thumbDrag="updateVolumeIcon(event)" initialize="init(event)">
+				<mx:Script> 
+	    		<![CDATA[
+	    			private var volume_icons:Array;
+					[Embed(source="../assets/sound_none.png")]
+					private var sound_none:Class;
+					[Embed(source="../assets/sound_low.png")]
+					private var sound_low:Class;
+					[Embed(source="../assets/sound.png")]
+					private var sound:Class;
+		
+					[Bindable]
+					private var volume_icon:Class;
+					private function init(event:Event):void {
+        				volume_icons = [sound_none,sound_low,sound];
+        				volume_icon = volume_icons[2];
+        			}
+					private function updateVolume(event:SliderEvent):void{
+						Controller.get_instance().set_volume(int(event.value));
+						updateVolumeIcon(event);
+	    			}
+	    			private function updateVolumeIcon(event:SliderEvent):void{
+	    				var vol:int = int(event.value);
+						if(vol < 25)
+							volume_icon = volume_icons[0];
+						else if(vol > 70)
+							volume_icon = volume_icons[2];
+						else
+							volume_icon = volume_icons[1];
+	    			}
+	    		]]> 
+  				</mx:Script> 
+			       
+			</mx:HSlider>
+		</mx:ApplicationControlBar>
+		
+		<mx:Spacer width="100%"/>
+		
+		<!-- Selection box for audio output -->
+		<mx:ComboBox id="output_selection_box" 
+			change="DataModel.get_instance().output = output_selection_box.selectedItem.data">      
+			<mx:ArrayCollection>
+					<mx:Object label="Output: Howl" data="howl"/>
+					<mx:Object label="Output: Browser" data="browser"/>
+			</mx:ArrayCollection>
+		</mx:ComboBox>
+		
+		<mx:Spacer width="100%"/>
+		<mx:TextInput id="search_box" text="search..." fontStyle="italic"
+			focusIn="search_focus_in_handler(event)" focusOut="search_focus_out_handler(event)" 
+			change="Controller.get_instance().search_playlist(search_box.text)" borderStyle="solid" borderThickness="2"/>
+		<!-- View functions for search box -->
+		<mx:Script> 
+    		<![CDATA[
+	            private function search_focus_in_handler(event:FocusEvent):void {
+	  				if(search_box.text == "search..."){ 
+	    				search_box.text = null;
+	    				search_box.setStyle("fontStyle","regular");
+	    			} 
+				}
+				private function search_focus_out_handler(event:FocusEvent):void {
+	  				if(search_box.text == ""){ 
+	  					search_box.setStyle("fontStyle","italic");
+	    				search_box.text = "search...";
+	    			} 
+				}
+			]]> 
+		</mx:Script>
+	</mx:ControlBar>
+
+	<!-- Data Bindings -->
+	<mx:Binding source="DataModel.get_instance().current_playlist" destination="current_playlist_grid.dataProvider" />
+	<mx:Binding source='DataModel.get_instance().playlist_names' destination="playlist_select_button.dataProvider" />
+	<mx:Binding source='DataModel.get_instance().current_playlist.name' destination="playlist_select_button.label" />
+	<mx:Binding source="DataModel.get_instance().status.state" destination="playIcon" />
+	<mx:Binding source="DataModel.get_instance().status.volume" destination="volume_slider.value" />
+
+</mx:Panel>

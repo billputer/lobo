@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- mx:Application represent the root of a Flex application -->
+
+<mx:Application paddingTop="10" viewSourceURL="srcview/index.html"
+xmlns:mx="http://www.adobe.com/2006/mxml" historyManagementEnabled="false" 
+initialize="initializeHandler(event)" width="100%" height="100%" horizontalScrollPolicy="off" verticalScrollPolicy="off" xmlns:views="views.*">
+
+	<!-- Application initialization code -->
+	<mx:Script> 
+	        <![CDATA[
+	            import controls.Controller;
+	            
+	            /**
+				* Program-wide instance of Controller
+				*/
+	            private var controller:Controller;
+	            
+				/**
+				* Initializes Controller on start of main Flex application. 
+				* @param event Event generated on Howl Application initialization.
+	            */
+	             private function initializeHandler(event:Event):void {
+	            	controller = Controller.get_instance();
+	            }
+	        ]]> 
+	</mx:Script>
+
+	<!-- Main Application Layout-->
+	<mx:HBox width="100%" height="73" horizontalAlign="center">
+		<!-- Application title-->
+		<mx:Panel width="100%" headerHeight="8" horizontalAlign="center" verticalAlign="middle" height="73">
+			<mx:Text id="title" text="Howl: music where you want it, when you want it" textAlign="center" fontSize="16" width="100%"/>
+		</mx:Panel>
+		<!-- Status Display Panel-->
+		<views:StatusPanel id="status_panel" />
+	</mx:HBox>
+	
+	<mx:HDividedBox width="100%" height="100%">
+	
+		<!-- Temporary Playlist Panel-->
+		<views:TempPlaylistPanel id="temp_playlist" title="Scratch-Pad" height="100%" width="250" headerHeight="30" color="#0B333C"/>
+		
+		<!-- Current Playlist Panel-->
+		<views:MainPlaylistPanel height="100%" width="100%" 
+		color="#000000" backgroundColor="#AAB7BE" fontWeight="normal" headerHeight="5" verticalGap="2" />
+		
+	</mx:HDividedBox>
+
+</mx:Application>

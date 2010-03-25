@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- extended mx:Label component for rendering playlists -->
+
+<mx:Label xmlns:mx="http://www.adobe.com/2006/mxml"
+	text="{data.artist} - {data.title}" >
+	<mx:Script>
+        <![CDATA[
+			import mx.controls.listClasses.ListData;
+			import mx.events.FlexEvent;
+			import models.DataModel;
+        
+        	private var index:int = -1;
+        	
+        	/**
+        	 * Function applied to all items in a playlist.  If an item is the currently playing track, then it is highlighted.
+        	 * @param value Individual item in list.
+        	 */
+            override public function set data(value:Object):void {
+            	var listData:ListData = ListData(super.listData);
+            	if(listData != null){
+					index = DataModel.get_instance().status.current_track_index;
+				}
+				if(value != null){
+            			super.data = value;
+            			if(listData.rowIndex == index){
+                			setStyle("fontWeight", 'bold');
+            			}
+            			else
+            				setStyle("fontWeight",'regular');
+            		}
+            	// Dispatch the dataChange event.
+            	dispatchEvent(new FlexEvent(FlexEvent.DATA_CHANGE));
+        	} 
+        ]]>
+    </mx:Script>
+    
+	
+</mx:Label>
